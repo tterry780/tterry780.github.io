@@ -74,11 +74,11 @@
       questionDiv.innerHTML = `
         <label>${questions[i]}</label>
         <select class="answer-dropdown" data-question="${i + 1}">
-          <option value="">Select Answer 1</option>
+          <option value="">Select Song 1</option>
           ${possibleAnswers.map(answer => `<option value="${answer}">${answer}</option>`).join('')}
         </select>
         <select class="answer-dropdown" data-question="${i + 1}">
-          <option value="">Select Answer 2</option>
+          <option value="">Select Song 2</option>
           ${possibleAnswers.map(answer => `<option value="${answer}">${answer}</option>`).join('')}
         </select>
       `;
