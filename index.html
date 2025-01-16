@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playlist 8 Guess Submission</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .question {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    select {
+      margin-right: 10px;
+      width: 200px;
+    }
+    input[type="text"] {
+      width: 300px;
+      margin-bottom: 20px;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Quiz Submission</h1>
+
+  <!-- Submitter Name -->
+  <form id="quiz-form">
+    <label for="submitter-name">Submitter's Name:</label>
+    <input type="text" id="submitter-name" name="submitter-name" placeholder="Enter your name" required>
+
+    <!-- Questions -->
+    <div id="questions-container"></div>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    const possibleAnswers = [
+      "Angel - NewDad", "Beggin - Madcon", "Comatose - quannnic", "Different - Hippie Sabotage", "Genghis Khan - Miike Snow",
+      "Goodbye My Lover - James Blunt", "Heart It Races - Dr. Dog", "Heavy, California - Jungle ", "I Really Want to Stay at Your House (Acoustic) - Linuty ", "Indigo - Sam Barber & Avery Anna ",
+      "Intro Sweet Glory - Jimkata", "It Only Cost Everything - Victor Ray", "Love and Glory - Zinadelphia", "Moments/Tides - Goth Babe", "Over the Hills and Far Away - Led Zeppelin",
+      "Poison - Klaus Veen", "Rockin' All Night Long - Adam Hambrick", "Saving flowers - Salute ft. Rina Sawayama", "Slide - Goo Goo Dolls", "Smooth - Santana",
+      "Stick Season - Noah Kahan", "Tiny Dancer - Elton John", "What's The Use? - Mac Miller", "Wildest Dreams -The Main Squeeze", "YellowLedbetter - Pearl Jam ", "人生は夢だらけ - Sheena Ringo"
+    ];
+
+    const questions = [
+      "Ashley",
+      "Blake",
+      "Bri",
+      "Bryce",
+      "Degan",
+      "Henry",
+      "Kanon",
+      "Marie",
+      "Matt",
+      "TJ",
+      "Trae",
+      "Walker",
+      "Zach"
+    ];
+
+    // Generate the questions dynamically
+    const questionsContainer = document.getElementById('questions-container');
+    for (let i = 0; i < questions.length; i++) {
+      const questionDiv = document.createElement('div');
+      questionDiv.classList.add('question');
+      questionDiv.innerHTML = `
+        <label>${questions[i]}</label>
+        <select class="answer-dropdown" data-question="${i + 1}">
+          <option value="">Select Answer 1</option>
+          ${possibleAnswers.map(answer => `<option value="${answer}">${answer}</option>`).join('')}
+        </select>
+        <select class="answer-dropdown" data-question="${i + 1}">
+          <option value="">Select Answer 2</option>
+          ${possibleAnswers.map(answer => `<option value="${answer}">${answer}</option>`).join('')}
+        </select>
+      `;
+      questionsContainer.appendChild(questionDiv);
+    }
+
+    // Track selected answers and dynamically update dropdowns
+    const dropdowns = document.querySelectorAll('.answer-dropdown');
+
+    dropdowns.forEach(dropdown => {
+      dropdown.addEventListener('change', () => {
+        updateDropdowns();
+      });
+    });
+
+    function updateDropdowns() {
+      const selectedAnswers = new Set();
+
+      // Collect all selected answers
+      dropdowns.forEach(dropdown => {
+        if (dropdown.value) {
+          selectedAnswers.add(dropdown.value);
+        }
+      });
+
+      // Update each dropdown's options
+      dropdowns.forEach(dropdown => {
+        const currentSelection = dropdown.value; // Store the current selection
+        const options = dropdown.options;
+
+        for (let i = 0; i < options.length; i++) {
+          const optionValue = options[i].value;
+
+          if (selectedAnswers.has(optionValue) && optionValue !== currentSelection) {
+            options[i].style.display = 'none'; // Hide selected options
+          } else {
+            options[i].style.display = ''; // Show unselected options
+          }
+        }
+      });
+    }
+
+    // Handle form submission
+    document.getElementById('quiz-form').addEventListener('submit', (event) => {
+      event.preventDefault(); // Prevent default form submission
+
+      const submitterName = document.getElementById('submitter-name').value.trim();
+      if (!submitterName) {
+        alert('Please enter your name before submitting.');
+        return;
+      }
+
+      const answers = [];
+      dropdowns.forEach((dropdown, index) => {
+        const questionNumber = Math.floor(index / 2) + 1; // Get the question number
+        const answerNumber = (index % 2) + 1; // Get whether it's Answer 1 or 2
+        answers.push({
+          question: `Question ${questionNumber}`,
+          answer: dropdown.value || `Answer ${answerNumber}: Not Selected`,
+        });
+      });
+
+      // Send submitter name and answers to Google Sheets using CORS proxy
+      fetch('https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/AKfycbwQZAujwRTe0fsVWYBy1eJ_CLamUaflja09P1u7PCcovstjq4vxLEoAj0d22cIf0SI_ZQ/exec', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ submitterName, answers }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          alert('Quiz submitted successfully!');
+        } else {
+          alert('There was an issue submitting the quiz: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Fetch error:', error);
+        alert('Error: Could not submit the quiz. Check the console for more details.');
+      });
+    });
+  </script>
+</body>
+</html>
